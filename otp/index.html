@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Registration Form</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #72EDF2 10%, #5151E5 100%);
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        .container h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        input, button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 25px;
+            font-size: 16px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .otp-display, .message {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 18px;
+            color: #007bff;
+        }
+        .message {
+            font-size: 16px;
+        }
+        .message.correct {
+            color: green;
+        }
+        .message.incorrect {
+            color: red;
+        }
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: -10px;
+            margin-bottom: 10px;
+        }
+        .back-button {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s ease;
+        }
+        .back-button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="formContainer">
+    <hgroup>
+        <h1 class="site-title" style="text-align: center; color: green;">Voice Based OTP Verification System</h1>
+    </hgroup>
+    
+    <h2>Registration Form</h2>
+    <form id="registrationForm">
+        <input type="text" id="username" name="username" placeholder="Username" required>
+        <div id="usernameError" class="error-message"></div>
+        <input type="text" id="lastname" name="lastname" placeholder="Lastname" required>
+        <div id="lastnameError" class="error-message"></div>
+        <input type="text" id="contact" name="contact" placeholder="Contact Number" required>
+        <div id="contactError" class="error-message"></div>
+        <button type="button" id="sendOtpButton">Send OTP</button>
+        <div class="otp-display" id="otpDisplay"></div>
+        <div class="message" id="message"></div>
+    </form>
+</div>
+
+<div class="container" id="otpContainer" style="display: none;">
+    <h2>Enter OTP</h2>
+    <form id="otpForm">
+        <input type="text" id="otpInput" name="otpInput" placeholder="Enter OTP" required>
+        <button type="button" id="validateOtpButton">Validate OTP</button>
+        <button type="button" id="startSpeechRecognitionButton">Start Speech Recognition</button>
+        <div class="message" id="otpMessage"></div>
+        <div id="successMessage" style="display: none;">
+            <h3>Login Successful!</h3>
+            <button type="button" class="back-button" onclick="window.location.href='register.php';">Back</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    let generatedOtp;
+
+    document.getElementById('sendOtpButton').addEventListener('click', sendOtp);
+    document.getElementById('validateOtpButton').addEventListener('click', validateOtp);
+    document.getElementById('startSpeechRecognitionButton').addEventListener('click', startSpeechRecognition);
+
+    document.getElementById('username').addEventListener('input', validateAlphabets);
+    document.getElementById('lastname').addEventListener('input', validateAlphabets);
+    document.getElementById('contact').addEventListener('input', validateContactNumber);
+
+    function sendOtp() {
+        const username = document.getElementById('username').value;
+        const lastname = document.getElementById('lastname').value;
+        const contact = document.getElementById('contact').value;
+
+        if (!username || !lastname || !contact || !/^\d{10}$/.test(contact)) {
+            if (!username) document.getElementById('usernameError').textContent = 'Please enter your username.';
+            if (!lastname) document.getElementById('lastnameError').textContent = 'Please enter your lastname.';
+            if (!contact) {
+                document.getElementById('contactError').textContent = 'Please enter your contact number.';
+            } else if (!/^\d{10}$/.test(contact)) {
+                document.getElementById('contactError').textContent = 'Please enter a valid 10-digit contact number.';
+            }
+            return;
+        }
+
+        // Clear all errors if all fields are valid
+        document.getElementById('usernameError').textContent = '';
+        document.getElementById('lastnameError').textContent = '';
+        document.getElementById('contactError').textContent = '';
+
+        generatedOtp = Math.floor(1000 + Math.random() * 9000);
+        document.getElementById('otpDisplay').textContent = `Your OTP is: ${generatedOtp}`;
+
+        setTimeout(() => {
+            document.getElementById('formContainer').style.display = 'none';
+            document.getElementById('otpContainer').style.display = 'block';
+        }, 3000); 
+    }
+
+    function validateOtp() {
+        const enteredOtp = document.getElementById('otpInput').value;
+        const messageElement = document.getElementById('otpMessage');
+        const successMessageElement = document.getElementById('successMessage');
+
+        if (parseInt(enteredOtp) === generatedOtp) {
+            messageElement.textContent = "OTP is correct!";
+            messageElement.className = "message correct";
+            successMessageElement.style.display = 'block';
+        } else {
+            messageElement.textContent = "OTP is incorrect!";
+            messageElement.className = "message incorrect";
+        }
+    }
+
+    function startSpeechRecognition() {
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onresult = (event) => {
+            const speechResult = event.results[0][0].transcript;
+            document.getElementById('otpInput').value = speechResult;
+            validateOtp();
+        };
+
+        recognition.start();
+    }
+
+    function validateAlphabets(event) {
+        const input = event.target;
+        const regex = /^[a-zA-Z]*$/;
+
+        if (!regex.test(input.value)) {
+            document.getElementById(`${input.id}Error`).textContent = 'Please enter alphabets only.';
+        } else {
+            document.getElementById(`${input.id}Error`).textContent = '';
+        }
+    }
+
+    function validateContactNumber() {
+        const contactInput = document.getElementById('contact');
+        const contactValue = contactInput.value;
+        const contactError = document.getElementById('contactError');
+
+        if (!/^\d{10}$/.test(contactValue)) {
+            contactError.textContent = 'Please enter a valid 10-digit contact number.';
+        } else {
+            contactError.textContent = '';
+        }
+    }
+
+    function validateRegistrationForm() {
+        const username = document.getElementById('username');
+        const lastname = document.getElementById('lastname');
+        const contact = document.getElementById('contact');
+        let valid = true;
+
+        if (!/^[a-zA-Z]+$/.test(username.value)) {
+            document.getElementById('usernameError').textContent = 'Please enter alphabets only.';
+            valid = false;
+        } else {
+            document.getElementById('usernameError').textContent = '';
+        }
+
+        if (!/^[a-zA-Z]+$/.test(lastname.value)) {
+            document.getElementById('lastnameError').textContent = 'Please enter alphabets only.';
+            valid = false;
+        } else {
+            document.getElementById('lastnameError').textContent = '';
+        }
+
+        if (!/^\d{10}$/.test(contact.value)) {
+            document.getElementById('contactError').textContent = 'Please enter a valid 10-digit contact number.';
+            valid = false;
+        } else {
+            document.getElementById('contactError').textContent = '';
+        }
+
+        return valid;
+    }
+</script>
+
+</body>
+</html>
