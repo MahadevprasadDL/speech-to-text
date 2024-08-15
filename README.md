@@ -20,5 +20,5 @@ The speech-to-text project begins with a registration page. On this page, users 
 1. Go to Google and search for a "phone.email" interface service to create an account. After creating your account, you will get a "data-client-id."
 2. Open the home.php file and replace the placeholder client ID with your own client ID in line 71 of the code.
 
-"C:\Users\admin\OneDrive\Pictures\Screenshots\code.png"
+
    
